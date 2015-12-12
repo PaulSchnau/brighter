@@ -165,7 +165,7 @@ function getNextColor(){
 
 function getHue(logPitch){
 	console.log(logPitch);
-	var absolute_hue = logPitch * 360 / 512;
+	var absolute_hue = logPitch * 360 / 50;
 	var relative_hue = (absolute_hue + 210) % 360;
 	return relative_hue;
 }
@@ -276,7 +276,7 @@ function autoCorrelate( buf, sampleRate ) {
 lastTimeColorChanged = Date.now();
 threshold = 0.1;
 function shouldColorChange( buf , timeLastColorChanged){
-	if (Date.now() - lastTimeColorChanged > 85){
+	if (Date.now() - lastTimeColorChanged > 5){
 		lastTimeColorChanged = Date.now();
 		return true;
 	}
@@ -301,6 +301,9 @@ function updatePitch( time ) {
 	var cycles = new Array;
 	analyser.getFloatTimeDomainData( buf );
 	var ac = getFFT(buf, audioContext.sampleRate );
+	ac.sort(function(a,b){
+    	return b[0] - a[0];
+	});
 
 	if (DEBUGCANVAS) {  // This draws the current waveform, useful for debugging
 		waveCanvas.clearRect(0,0,512,256);
