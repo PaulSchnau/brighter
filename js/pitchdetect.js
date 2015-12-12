@@ -163,18 +163,19 @@ function getNextColor(){
 }
 
 function getHue(pitch){
+	if (pitch !== -1) { return 0; }
 	var pitchLog = Math.log(pitch);
-	var huePerPitchLog = 360 / Math.log(24000);
+	var huePerPitchLog = 360 / Math.log(16000);
 	var abosulte_hue = huePerPitchLog * pitchLog;
-	return abosulte_hue +  % 360;
+	return abosulte_hue;
 }
 
 function getSaturation(buffer){
-	return 100;
+	return 50;
 }
 
-function getBrightness(buffer){
-	return 100;
+function getLightness(buffer){
+	return 50;
 }
 
 var MIN_SAMPLES = 4;  // will be initialized when AudioContext is created.
@@ -244,7 +245,6 @@ function updatePitch( time ) {
 	var cycles = new Array;
 	analyser.getFloatTimeDomainData( buf );
 	var ac = autoCorrelate( buf, audioContext.sampleRate );
-	console.log(ac);
 
 	if (DEBUGCANVAS) {  // This draws the current waveform, useful for debugging
 		waveCanvas.clearRect(0,0,512,256);
@@ -272,9 +272,13 @@ function updatePitch( time ) {
 
  	colorChange = shouldColorChange(buf, audioContext.sampleRate);
  	if (colorChange){
- 		color = getNextColor();
- 		document.body.style.backgroundColor = color;
-		myFirebaseRef.set({color: color});
+		var hue = getHue(ac);
+		var saturation = getSaturation();
+		var lightness = getLightness();
+		var backgroundColor = 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
+		console.log(backgroundColor);
+ 		document.body.style.backgroundColor = backgroundColor;
+		myFirebaseRef.set({backgroundColor: backgroundColor});
  	}
 
 	if (!window.requestAnimationFrame)
