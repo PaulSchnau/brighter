@@ -162,6 +162,46 @@ function getNextColor(){
 	return noteColors[nextColorIndex%12];
 }
 
+var MIN_SAMPLES = 4;  // will be initialized when AudioContext is created.
+var pitches = [];
+
+function autoCorrelate( buf, sampleRate ) {
+	var SIZE = buf.length;
+	var MAX_SAMPLES = Math.floor(SIZE/2);
+	var best_offset = -1;
+	var best_correlation = 0;
+	var rms = 0;
+	var foundGoodCorrelation = false;
+	var correlations = new Array(MAX_SAMPLES);
+
+	var lastCorrelation=1;
+	for (var offset = MIN_SAMPLES; offset < MAX_SAMPLES; offset++) {
+		var correlation = 0;
+
+		for (var i=0; i<MAX_SAMPLES; i++) {
+			correlation += Math.abs((buf[i])-(buf[i+offset]));
+		}
+		correlation = 1 - (correlation/MAX_SAMPLES);
+		correlations[offset] = correlation;
+		if ((correlation>0.9) && (correlation > lastCorrelation)) {
+			foundGoodCorrelation = true;
+			if (correlation > best_correlation) {
+				best_correlation = correlation;
+				best_offset = offset;
+			}
+		} else if (foundGoodCorrelation) {
+			var shift = (correlations[best_offset+1] - correlations[best_offset-1])/correlations[best_offset];
+			last_known_pitch = sampleRate/(best_offset+(8*shift));
+			return last_known_pitch;
+		}
+		lastCorrelation = correlation;
+	}
+	if (best_correlation > 0.01) {
+		last_known_pitch = sampleRate/best_offset;
+	}
+	return last_known_pitch;
+}
+
 lastTimeColorChanged = Date.now();
 threshold = 0.1;
 function shouldColorChange( buf , timeLastColorChanged){
@@ -188,6 +228,8 @@ colors = [];
 function updatePitch( time ) {
 	var cycles = new Array;
 	analyser.getFloatTimeDomainData( buf );
+	var ac = autoCorrelate( buf, audioContext.sampleRate );
+	console.log(ac);
 
 	if (DEBUGCANVAS) {  // This draws the current waveform, useful for debugging
 		waveCanvas.clearRect(0,0,512,256);
