@@ -165,17 +165,33 @@ function getNextColor(){
 function getHue(pitch){
 	if (pitch === -1) { return 0; }
 	var pitchLog = Math.log(pitch);
-	var huePerPitchLog = 360 / Math.log(16000);
-	var abosulte_hue = huePerPitchLog * pitchLog;
-	return abosulte_hue;
+	var huePerPitchLog = 360 / Math.log(10000);
+	var absolute_hue = huePerPitchLog * pitchLog;
+	return (absolute_hue + 220) % 360;
 }
 
+highAmplitudeReached = 0;
 function getSaturation(buffer){
-	return 50;
+	var currentMaxAmplitude = Math.max(...buf);
+	if (currentMaxAmplitude > highAmplitudeReached){
+		highAmplitudeReached = currentMaxAmplitude;
+	} else {
+		highAmplitudeReached = highAmplitudeReached * 0.99;
+	}
+	var relativeAmplitude = currentMaxAmplitude / highAmplitudeReached;
+	return ((relativeAmplitude * 100) / 2 ) + 25;
 }
 
+highAmplitudeReached2 = 0;
 function getLightness(buffer){
-	return 50;
+	var currentMaxAmplitude = Math.max(...buf);
+	if (currentMaxAmplitude > highAmplitudeReached2){
+		highAmplitudeReached2 = currentMaxAmplitude;
+	} else {
+		highAmplitudeReached2 = highAmplitudeReached2 * 0.999;
+	}
+	var relativeAmplitude = currentMaxAmplitude / highAmplitudeReached2;
+	return ((relativeAmplitude * 100) / 2 ) + 0;
 }
 
 var MIN_SAMPLES = 4;  // will be initialized when AudioContext is created.
@@ -221,18 +237,15 @@ function autoCorrelate( buf, sampleRate ) {
 lastTimeColorChanged = Date.now();
 threshold = 0.1;
 function shouldColorChange( buf , timeLastColorChanged){
+	return true;
 
-	if (Date.now() - lastTimeColorChanged < 150){
+	if (Date.now() - lastTimeColorChanged < 50){
 		return false;
 	}
-
 	threshold = threshold * 0.99;
-
 	maxAmplitude = Math.max(...buf);
 
 	if (maxAmplitude > threshold){
-		console.log(maxAmplitude);
-
 		threshold = maxAmplitude * 2;
 		lastTimeColorChanged = Date.now();
 		return true;
@@ -273,10 +286,9 @@ function updatePitch( time ) {
  	colorChange = shouldColorChange(buf, audioContext.sampleRate);
  	if (colorChange){
 		var hue = getHue(ac);
-		var saturation = getSaturation();
-		var lightness = getLightness();
+		var saturation = getSaturation(buf);
+		var lightness = getLightness(buf);
 		var backgroundColor = 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
-		console.log(backgroundColor);
  		document.body.style.backgroundColor = backgroundColor;
 		myFirebaseRef.set({backgroundColor: backgroundColor});
  	}
