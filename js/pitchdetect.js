@@ -162,6 +162,21 @@ function getNextColor(){
 	return noteColors[nextColorIndex%12];
 }
 
+function getHue(pitch){
+	var pitchLog = Math.log(pitch);
+	var huePerPitchLog = 360 / Math.log(24000);
+	var abosulte_hue = huePerPitchLog * pitchLog;
+	return abosulte_hue +  % 360;
+}
+
+function getSaturation(buffer){
+	return 100;
+}
+
+function getBrightness(buffer){
+	return 100;
+}
+
 var MIN_SAMPLES = 4;  // will be initialized when AudioContext is created.
 var pitches = [];
 
