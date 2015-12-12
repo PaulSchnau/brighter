@@ -289,7 +289,7 @@ function updatePitch( time ) {
 var myFirebaseRef = new Firebase("https://brighter.firebaseio.com/");
 
 function followerMode(){
-	myFirebaseRef.child("color").on("value", function(snapshot) {
-	  	document.body.style.backgroundColor = snapshot.val();
+	myFirebaseRef.child("backgroundColor").on("value", function(snapshot) {
+		document.body.style.backgroundColor = snapshot.val();
 	});
 }
