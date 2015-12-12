@@ -168,7 +168,7 @@ function getHue(pitch){
 	var pitchLog = Math.log(pitch);
 	var huePerPitchLog = 360 / Math.log(10000);
 	var absolute_hue = huePerPitchLog * pitchLog;
-	return (absolute_hue + 220) % 360;
+	return (absolute_hue + 210) % 360;
 }
 
 highAmplitudeReached = 0;
