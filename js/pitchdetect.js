@@ -163,12 +163,11 @@ function getNextColor(){
 	return noteColors[nextColorIndex%12];
 }
 
-function getHue(pitch){
-	if (pitch === -1) { return 0; }
-	var pitchLog = Math.log(pitch);
-	var huePerPitchLog = 360 / Math.log(10000);
-	var absolute_hue = huePerPitchLog * pitchLog;
-	return (absolute_hue + 210) % 360;
+function getHue(logPitch){
+	console.log(logPitch);
+	var absolute_hue = logPitch * 360 / 512;
+	var relative_hue = (absolute_hue + 210) % 360;
+	return relative_hue;
 }
 
 highAmplitudeReached = 0;
@@ -199,21 +198,21 @@ var MIN_SAMPLES = 4;  // will be initialized when AudioContext is created.
 var pitches = [];
 
 function getFFT( buf, sampleRate ) {
-	
+
 	// get spectrum
 	var SIZE = buf.length;
 	var dft = new DFT(SIZE, 44100);
 	dft.forward(buf);
     var spectrum = dft.spectrum;
     var spec_len = spectrum.length
-	
+
 	// differentiate spectrum
 	var diff = []
 	for (var i = 0; i < spec_len; i++)
 	{
 		diff[i] = spectrum[i + 1] - spectrum[i]
 	}
-	
+
 	// find peaks in spectrum - i.e. where gradient is positive then negative
 	var peak_ind_val = []
 	for (var i = 0; i < diff.length; i++)
@@ -237,7 +236,7 @@ function getFFT( buf, sampleRate ) {
 
 
 function autoCorrelate( buf, sampleRate ) {
-	
+
 	var SIZE = buf.length;
 	var MAX_SAMPLES = Math.floor(SIZE/2);
 	var best_offset = -1;
@@ -301,8 +300,7 @@ colors = [];
 function updatePitch( time ) {
 	var cycles = new Array;
 	analyser.getFloatTimeDomainData( buf );
-	var ac = getFFT(buf, audioContext.sampleRate )[0][0];
-	console.log(ac);
+	var ac = getFFT(buf, audioContext.sampleRate );
 
 	if (DEBUGCANVAS) {  // This draws the current waveform, useful for debugging
 		waveCanvas.clearRect(0,0,512,256);
@@ -330,12 +328,19 @@ function updatePitch( time ) {
 
  	colorChange = shouldColorChange(buf, audioContext.sampleRate);
  	if (colorChange){
-		var hue = getHue(ac);
-		var saturation = getSaturation(buf);
-		var lightness = getLightness(buf);
-		var backgroundColor = 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
- 		document.body.style.backgroundColor = backgroundColor;
-		myFirebaseRef.set({backgroundColor: backgroundColor});
+		if (ac) {
+			var colors = [];
+			for (var i = 0; i < 3; i++) {
+				var hue = getHue(ac[i][0]);
+				var saturation = getSaturation(buf);
+				var lightness = getLightness(buf);
+				var color = 'hsl(' + hue + ', ' + saturation + '%, ' + lightness + '%)';
+				colors.push(color);
+			}
+			var gradient = 'linear-gradient(to bottom right, ' + colors[0] + ', ' + colors[1] + ', ' + colors[2] + ')';
+	 		document.body.style.backgroundImage = gradient;
+			myFirebaseRef.set({gradient: gradient});
+		}
  	}
 
 	if (!window.requestAnimationFrame)
@@ -346,7 +351,7 @@ function updatePitch( time ) {
 var myFirebaseRef = new Firebase("https://brighter.firebaseio.com/");
 
 function followerMode(){
-	myFirebaseRef.child("backgroundColor").on("value", function(snapshot) {
-		document.body.style.backgroundColor = snapshot.val();
+	myFirebaseRef.child("backgroundImage").on("value", function(snapshot) {
+		document.body.style.backgroundImage = snapshot.val();
 	});
 }
