@@ -7,7 +7,7 @@ var analyser = null;
 var theBuffer = null;
 var DEBUGCANVAS = null;
 var mediaStreamSource = null;
-var detectorElem, 
+var detectorElem,
 	canvasElem,
 	waveCanvas,
 	pitchElem,
@@ -24,7 +24,7 @@ window.onload = function() {
 	request.open("GET", "../retribution.ogg", true);
 	request.responseType = "arraybuffer";
 	request.onload = function() {
-	  audioContext.decodeAudioData( request.response, function(buffer) { 
+	  audioContext.decodeAudioData( request.response, function(buffer) {
 	    	theBuffer = buffer;
 		} );
 	}
@@ -43,8 +43,8 @@ window.onload = function() {
 	detuneElem = document.getElementById( "detune" );
 	detuneAmount = document.getElementById( "detune_amt" );
 
-	detectorElem.ondragenter = function () { 
-		this.classList.add("droptarget"); 
+	detectorElem.ondragenter = function () {
+		this.classList.add("droptarget");
 		return false; };
 	detectorElem.ondragleave = function () { this.classList.remove("droptarget"); return false; };
 	detectorElem.ondrop = function (e) {
@@ -56,7 +56,7 @@ window.onload = function() {
 	  	reader.onload = function (event) {
 	  		audioContext.decodeAudioData( event.target.result, function(buffer) {
 	    		theBuffer = buffer;
-	  		}, function(){alert("error loading!");} ); 
+	  		}, function(){alert("error loading!");} );
 
 	  	};
 	  	reader.onerror = function (event) {
@@ -73,7 +73,7 @@ function error() {
 
 function getUserMedia(dictionary, callback) {
     try {
-        navigator.getUserMedia = 
+        navigator.getUserMedia =
         	navigator.getUserMedia ||
         	navigator.webkitGetUserMedia ||
         	navigator.mozGetUserMedia;
@@ -236,8 +236,8 @@ function shouldColorChange( buf , timeLastColorChanged){
 		threshold = maxAmplitude * 2;
 		lastTimeColorChanged = Date.now();
 		return true;
-	} 
-	return false;	
+	}
+	return false;
 }
 
 colors = [];
