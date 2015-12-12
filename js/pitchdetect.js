@@ -237,20 +237,24 @@ function autoCorrelate( buf, sampleRate ) {
 lastTimeColorChanged = Date.now();
 threshold = 0.1;
 function shouldColorChange( buf , timeLastColorChanged){
-	return true;
-
-	if (Date.now() - lastTimeColorChanged < 50){
-		return false;
-	}
-	threshold = threshold * 0.99;
-	maxAmplitude = Math.max(...buf);
-
-	if (maxAmplitude > threshold){
-		threshold = maxAmplitude * 2;
+	if (Date.now() - lastTimeColorChanged > 85){
 		lastTimeColorChanged = Date.now();
 		return true;
 	}
 	return false;
+
+	// if (Date.now() - lastTimeColorChanged < 50){
+	// 	return false;
+	// }
+	// threshold = threshold * 0.99;
+	// maxAmplitude = Math.max(...buf);
+
+	// if (maxAmplitude > threshold){
+	// 	threshold = maxAmplitude * 2;
+	// 	lastTimeColorChanged = Date.now();
+	// 	return true;
+	// }
+	// return false;
 }
 
 colors = [];
