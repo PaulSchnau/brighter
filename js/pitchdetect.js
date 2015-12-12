@@ -163,7 +163,7 @@ function getNextColor(){
 }
 
 function getHue(pitch){
-	if (pitch !== -1) { return 0; }
+	if (pitch === -1) { return 0; }
 	var pitchLog = Math.log(pitch);
 	var huePerPitchLog = 360 / Math.log(16000);
 	var abosulte_hue = huePerPitchLog * pitchLog;
