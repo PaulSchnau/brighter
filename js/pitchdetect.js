@@ -15,6 +15,7 @@ var detectorElem,
 	detuneElem,
 	detuneAmount;
 
+
 last_known_pitch = -1;
 
 window.onload = function() {
@@ -197,7 +198,46 @@ function getLightness(buffer){
 var MIN_SAMPLES = 4;  // will be initialized when AudioContext is created.
 var pitches = [];
 
+function getFFT( buf, sampleRate ) {
+	
+	// get spectrum
+	var SIZE = buf.length;
+	var dft = new DFT(SIZE, 44100);
+	dft.forward(buf);
+    var spectrum = dft.spectrum;
+    var spec_len = spectrum.length
+	
+	// differentiate spectrum
+	var diff = []
+	for (var i = 0; i < spec_len; i++)
+	{
+		diff[i] = spectrum[i + 1] - spectrum[i]
+	}
+	
+	// find peaks in spectrum - i.e. where gradient is positive then negative
+	var peak_ind_val = []
+	for (var i = 0; i < diff.length; i++)
+	{
+		if (diff[i] > 0 && diff[i + 1] <= 0)
+		{
+			var ind_val = [i, spectrum[i]]
+			peak_ind_val.push(ind_val)
+		}
+	}
+	peak_ind_val.sort(function(a,b){
+    	return b[1] - a[1];
+	});
+	if (peak_ind_val.length < 3)
+	{
+		peak_ind_val = [[0, 0], [0, 0], [0, 0]];
+	}
+	top3 = peak_ind_val.slice(0, 3);
+	return top3;
+}
+
+
 function autoCorrelate( buf, sampleRate ) {
+	
 	var SIZE = buf.length;
 	var MAX_SAMPLES = Math.floor(SIZE/2);
 	var best_offset = -1;
@@ -261,7 +301,8 @@ colors = [];
 function updatePitch( time ) {
 	var cycles = new Array;
 	analyser.getFloatTimeDomainData( buf );
-	var ac = autoCorrelate( buf, audioContext.sampleRate );
+	var ac = getFFT(buf, audioContext.sampleRate )[0][0];
+	console.log(ac);
 
 	if (DEBUGCANVAS) {  // This draws the current waveform, useful for debugging
 		waveCanvas.clearRect(0,0,512,256);
